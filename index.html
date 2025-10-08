@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-6 Worksheet | Mama Said This</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root { --primary: #e85d75; --light: #f8fafc; --dark: #1e293b; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--light); padding: 1rem; max-width: 800px; margin: 0 auto; }
+        @media (max-width: 768px) { body { padding: 0.5rem; } }
+        .back-btn { display: inline-block; margin-bottom: 1rem; padding: 0.5rem 1rem; background: #6366f1; color: white; text-decoration: none; border-radius: 20px; font-size: 0.9rem; }
+        h1 { color: var(--primary); text-align: center; margin-bottom: 1rem; }
+        form { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+        select, input { width: 100%; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 1rem; }
+        button { width: 100%; padding: 0.8rem; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        button:hover { background: #d14361; }
+        #output { display: none; background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-top: 1rem; }
+        #output h2 { text-align: center; color: var(--primary); margin-bottom: 1rem; }
+        .problem { margin-bottom: 1rem; font-size: 1.2rem; }
+        .answers { margin-top: 2rem; background: #f0f8ff; padding: 1rem; border-radius: 6px; }
+        .pdf-btn { background: #10b981; margin-top: 1rem; width: auto; padding: 0.5rem 1rem; display: inline-block; }
+        .pdf-btn:hover { background: #059669; }
+    </style>
+</head>
+<body>
+    <a href="https://edusheet-chooser.pages.dev/" class="back-btn">← Back to Chooser</a>
+    <a href="https://mamasaid-this.pages.dev/" class="back-btn" style="background: #6366f1; margin-left: 1rem;">🏠 Home</a>
+    
+    <h1>K-6 Worksheet Maker</h1>
+    <p style="text-align: center; color: #64748b; margin-bottom: 1rem;">Quick custom drills. Math or reading. Hit generate, print or PDF it.</p>
+    
+    <form id="genForm">
+        <label>Grade Level:</label>
+        <select id="grade">
+            <option value="k1">K-1 (Easy Peasy)</option>
+            <option value="23">2-3 (Building Up)</option>
+            <option value="46">4-6 (Challenge Mode)</option>
+        </select>
+        
+        <label>Subject:</label>
+        <select id="subject">
+            <option value="math">Math (Numbers Fun)</option>
+            <option value="reading">Reading (Story Time)</option>
+        </select>
+        
+        <label># of Problems:</label>
+        <input type="number" id="num" min="5" max="20" value="10">
+        
+        <button type="submit">Generate Worksheet!</button>
+    </form>
+    
+    <div id="output">
+        <div id="sheet"></div>
+        <button id="download" class="pdf-btn">Download PDF</button>
+        <div id="answers" class="answers" style="display: none;">
+            <h3>Answer Key (For Grown-Ups)</h3>
+            <div id="key"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('genForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const grade = document.getElementById('grade').value;
+            const subject = document.getElementById('subject').value;
+            const num = parseInt(document.getElementById('num').value);
+            
+            let problems = [], answers = [];
+            
+            if (subject === 'math') {
+                const ops = grade === 'k1' ? ['+'] : grade === '23' ? ['+', '-'] : ['+', '-', '*', '/'];
+                for (let i = 0; i < num; i++) {
+                    const a = Math.floor(Math.random() * (grade === 'k1' ? 10 : grade === '23' ? 20 : 50)) + 1;
+                    const b = Math.floor(Math.random() * (grade === 'k1' ? 10 : grade === '23' ? 20 : 50)) + 1;
+                    const op = ops[Math.floor(Math.random() * ops.length)];
+                    let result;
+                    if (op === '+') result = a + b;
+                    else if (op === '-') result = a - b;
+                    else if (op === '*') result = a * b;
+                    else result = a / b;
+                    problems.push(`${i+1}. ${a} ${op} ${b} = _____`);
+                    answers.push(`${i+1}. ${result}`);
+                }
+            } else { // Reading
+                const passage = "The quick brown fox jumps over the lazy dog. It runs through the green field under the blue sky.";
+                problems = Array(num).fill().map((_, i) => `${i+1}. What color is the sky? (From: "${passage.split('.')[0]}")`);
+                answers = Array(num).fill().map((_, i) => `${i+1}. Blue`); // Simple for demo; randomize in real
+            }
+            
+            document.getElementById('sheet').innerHTML = `<h2>Worksheet: ${subject.toUpperCase()} Practice</h2><ol>${problems.map(p => `<li>${p}</li>`).join('')}</ol>`;
+            document.getElementById('key').innerHTML = `<ol>${answers.map(a => `<li>${a}</li>`).join('')}</ol>`;
+            document.getElementById('output').style.display = 'block';
+            document.querySelector('.answers').style.display = 'block';
+        });
+        
+        document.getElementById('download').addEventListener('click', () => {
+            const element = document.getElementById('output');
+            html2pdf().set({ margin: 1, filename: 'worksheet.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 } }).from(element).save();
+        });
+    </script>
+</body>
+</html>
